@@ -8,8 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/book")
@@ -46,5 +50,43 @@ public class BookApi {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("error",e.getMessage(),null));
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse> getBookById(@PathVariable String id) {
+        try {
+            Book book = bookService.findBookById(id);
+
+            Map<String, Object> bookDetails = new HashMap<>();
+            bookDetails.put("title", book.getTitle());
+            bookDetails.put("author", book.getAuthor());
+            bookDetails.put("genre", book.getGenre());
+            bookDetails.put("publicationDate", book.getPublicationDate());
+            bookDetails.put("photoUrl", book.getPhotoUrl());
+
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ApiResponse("success",bookDetails, "Book details retrieved successfully")
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ApiResponse("error", e.getMessage(), null)
+            );
+        }
+    }
+
+    // New endpoint to upload photo for a specific book by ID
+    @PostMapping("/uploadPhoto/{id}")
+    public ResponseEntity<ApiResponse> uploadPhotoToBook(@PathVariable String id, @RequestBody Map<String, String> requestBody) {
+        try {
+            String photoUrl = requestBody.get("photoUrl");  // Extract photoUrl from the request body
+            String updatedPhotoUrl = bookService.uploadPhoto(id, photoUrl);
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("success", "Photo URL updated successfully", updatedPhotoUrl));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("error", e.getMessage(), null));
+        }
+    }
+
+
+
+
 
 }
