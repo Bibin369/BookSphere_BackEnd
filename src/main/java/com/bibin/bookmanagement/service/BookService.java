@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 
 @Service
 public class BookService {
@@ -22,7 +24,7 @@ public class BookService {
     private BookRepository bookRepository;
 
     private static int counter = 1;  // Counter to generate unique sequence-based ID
-    private final String PHOTO_UPLOAD_DIR = "path/to/upload/directory/"; // Set your photo upload directory
+    private final String PHOTO_UPLOAD_DIR = "E:\\BookManagementSystem\\FrontEnd\\book_management_system_frontend\\public\\images\\upload\\directory\\";
 
     public Book createBook(BookCreateDto bookCreateDto) {
         // Validate title (max 100 characters, required)
@@ -110,20 +112,44 @@ public class BookService {
     }
 
     // Method to upload a photo for a specific book by ID
-    public String uploadPhoto(String bookId, String photoUrl) {
+    public String uploadPhoto(String bookId, MultipartFile file) {
         // Find the book by ID
         Optional<Book> bookOptional = bookRepository.findById(bookId);
         if (bookOptional.isPresent()) {
             Book book = bookOptional.get();
 
-            // Update the book's photo URL
-            book.setPhotoUrl(photoUrl);
-            bookRepository.save(book); // Save the book with updated photo URL
+            try {
+                // Absolute path for the upload directory (ensure this exists on your system)
+                String uploadDir = "E:\\BookManagementSystem\\FrontEnd\\book_management_system_frontend\\public\\images\\upload\\directory\\"; // Updated path
+                Path uploadPath = Paths.get(uploadDir);
 
-            return photoUrl; // Return the photo URL
+                // Ensure the upload directory exists
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);  // Create directory if it doesn't exist
+                }
+
+                // Generate a unique file name to avoid overwriting
+                String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                Path filePath = uploadPath.resolve(fileName);
+
+                // Store the file locally
+                file.transferTo(filePath.toFile());
+
+                // Update the book's photo URL (relative path for access)
+                String photoUrl = "/uploads/photos/" + fileName;
+                book.setPhotoUrl(photoUrl);
+                bookRepository.save(book); // Save the book with the updated photo URL
+
+                return photoUrl; // Return the relative URL of the uploaded image
+            } catch (IOException e) {
+                throw new RuntimeException("File upload failed: " + e.getMessage());
+            }
         } else {
             throw new RuntimeException("Book not found with ID: " + bookId);
         }
     }
+
+
+
 
 }

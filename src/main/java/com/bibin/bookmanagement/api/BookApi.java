@@ -75,15 +75,15 @@ public class BookApi {
 
     // New endpoint to upload photo for a specific book by ID
     @PostMapping("/uploadPhoto/{id}")
-    public ResponseEntity<ApiResponse> uploadPhotoToBook(@PathVariable String id, @RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<ApiResponse> uploadPhotoToBook(@PathVariable String id, @RequestParam("file") MultipartFile file) {
         try {
-            String photoUrl = requestBody.get("photoUrl");  // Extract photoUrl from the request body
-            String updatedPhotoUrl = bookService.uploadPhoto(id, photoUrl);
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("success", "Photo URL updated successfully", updatedPhotoUrl));
+            String photoUrl = bookService.uploadPhoto(id, file); // Pass file to the service method
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("success", "Photo uploaded successfully", photoUrl));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("error", e.getMessage(), null));
         }
     }
+
 
 
 
