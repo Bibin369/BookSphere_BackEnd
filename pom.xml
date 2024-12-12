@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bibin</groupId>
 	<artifactId>bookmanagement</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>bookmanagement</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -72,6 +72,15 @@
 							<artifactId>lombok</artifactId>
 						</path>
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>**/*.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
